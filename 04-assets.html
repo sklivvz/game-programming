@@ -1,0 +1,53 @@
+<html>
+    <body>
+        <canvas id="canvas" height="480" width="640" style="border: 1px solid gainsboro;"></canvas>
+
+        <script>
+            
+            class Sprite {
+                constructor(asset) {
+                    this._x=10;
+                    this._y=50;
+                    this._asset = asset;
+                }
+
+                update(ticks) {
+                    this._x=(this._x+5)%640;
+                    this._y=(this._y+5)%480;
+                }
+
+                draw(ctx, ticks) {
+                    this._asset.draw(ctx, this, ticks);
+                }
+
+                get x() { return this._x; }
+                get y() { return this._y; }
+            }
+
+            class Asset {
+                draw(ctx, sprite, ticks) {
+                   ctx.fillText("Hello World "+ticks%100, sprite.x, sprite.y);
+                }
+            }
+
+            var helloAsset = new Asset();
+            var hello = new Sprite(helloAsset);
+
+            function draw() {
+                var ctx = document.getElementById('canvas').getContext('2d');
+                ctx.font = "30px Arial";
+
+                var ticks = (new Date()).getTime();
+
+                hello.update(ticks);
+
+                ctx.clearRect(0, 0, 640, 480); // clear canvas
+                hello.draw(ctx, ticks);
+                
+                window.requestAnimationFrame(draw);
+            }    
+        
+            draw();
+        </script>
+    </body>
+</html>

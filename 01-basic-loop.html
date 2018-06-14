@@ -1,0 +1,22 @@
+<html>
+    <body>
+        <canvas id="canvas" height="480" width="640" style="border: 1px solid gainsboro"></canvas>
+
+        <script>
+            function draw() {
+                var ctx = document.getElementById('canvas').getContext('2d');
+                ctx.font = "30px Arial";
+
+                var ticks = (new Date()).getTime();
+
+                ctx.clearRect(0, 0, 640, 480); // clear canvas
+
+                ctx.fillText("Hello World "+ticks%100, 10, 50);
+                
+                window.requestAnimationFrame(draw);
+            }    
+        
+            draw();
+        </script>
+    </body>
+</html>

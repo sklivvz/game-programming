@@ -1,0 +1,65 @@
+<html>
+    <body>
+        <canvas id="canvas" height="480" width="640" style="border: 1px solid gainsboro;"></canvas>
+
+        <script>
+            
+            class Sprite {
+                constructor(asset, x, y) {
+                    this._x=x;
+                    this._y=y;
+                    this._asset = asset;
+                }
+
+                update(ticks) {
+                    this._x=(this._x+5)%640;
+                }
+
+                draw(ctx, ticks) {
+                    this._asset.draw(ctx, this, ticks);
+                }
+
+                get x() { return this._x; }
+                get y() { return this._y; }
+            }
+
+            class Asset {
+                constructor() {
+                    this._data = new Image();
+                    this._data.src = "mario.png";
+                }
+
+                draw(ctx, sprite, ticks) {
+                    const frame = Math.floor(ticks%450/150);
+                    if (this._data) ctx.drawImage(this._data, frame*16, 0, 16, 16, sprite.x, sprite.y, 48, 48);
+                }
+            }
+
+            var helloAsset = new Asset();
+            
+            var sprites = [];
+            for(let i = 0; i<10; i++)
+                sprites.push(new Sprite(helloAsset,i*10, i*48));
+
+            function draw() {
+                var ctx = document.getElementById('canvas').getContext('2d');
+
+                var ticks = (new Date()).getTime();
+
+                sprites.forEach(function(sprite){
+                    sprite.update(ticks);
+                });
+
+                ctx.clearRect(0, 0, 640, 480); // clear canvas
+                ctx.fillRect(0,0,640,480);
+                sprites.forEach(function(sprite){
+                    sprite.draw(ctx, ticks);
+                });
+                
+                window.requestAnimationFrame(draw);
+            }    
+        
+            draw();
+        </script>
+    </body>
+</html>

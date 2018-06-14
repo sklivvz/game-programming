@@ -1,0 +1,175 @@
+<html>
+    <body>
+        <canvas id="canvas" height="480" width="640" style="border: 1px solid gainsboro;"></canvas>
+
+        <script>
+            class Keyboard {
+                constructor() {
+                    this._keys = new Set();
+                    const k = this._keys;
+                    document.addEventListener('keydown', function(evt) { k.add(evt.code) });
+                    document.addEventListener('keyup', function(evt) { k.delete(evt.code) });
+                }
+
+                has(k) {
+                    return this._keys.has(k)
+                }
+            }
+
+            class Sprite {
+                constructor(asset) {
+                    this._x=10;
+                    this._y=160;
+                    this._asset = asset;
+                    this._jump = 0;
+                    this._jumpPattern = [0, 5, 11, 15, 20, 24, 28, 32, 
+                                        35, 38, 40, 42, 44, 45, 46, 47, 
+                                        48, 48, 47, 46, 45, 44, 42, 40, 
+                                        38, 35, 32, 28, 24, 20, 15, 10, 5];
+                }
+
+                update(ticks, keyboard) {
+                    if(this._jump>0) 
+                        this._jump--;
+                    if(this._jump==0 && keyboard.has('KeyJ')) 
+                        this._jump = this._jumpPattern.length-1;
+                    this._x=(this._x+5)%640;
+                }
+
+                draw(ctx, ticks) {
+                    this._asset.draw(ctx, this, ticks);
+                }
+
+                get x() { return this._x; }
+                get y() { return this._y - this._jumpPattern[this._jump]; }
+                get w() { return 48; }
+                get h() { return 48; }
+            }
+
+            class DeadMario {
+                constructor(asset, x, y) {
+                    this._x=x;
+                    this._y=y;
+                    this._vy = -15;
+                    this._ay = 1;
+                    this._asset = asset;
+                }
+
+                update(ticks, keyboard) {
+                    this._vy += this._ay;
+                    this._y += this._vy;
+                    if (this._y>=480) {
+                        this._ax=0;
+                        this._vx=0;
+                    }
+                }
+
+                draw(ctx, ticks) {
+                    this._asset.draw(ctx, this, ticks);
+                }
+
+                get x() { return this._x; }
+                get y() { return this._y; }
+                get h() { return 48; }
+                get w() { return 48; }
+            }
+
+            class Barrel {
+                constructor(asset) {
+                    this._x=640;
+                    this._y=170;
+                    this._asset = asset;
+                }
+
+                update(ticks, keyboard) {
+                    this._x=(this._x-3);
+                    if (this._x<=0) this._x=640;
+                }
+
+                draw(ctx, ticks) {
+                    this._asset.draw(ctx, this, ticks);
+                }
+
+                get x() { return this._x; }
+                get y() { return this._y; }
+                get h() { return 30; }
+                get w() { return 36; }
+            }
+
+
+            class Asset {
+                constructor() {
+                    this._data = new Image();
+                    this._data.src = "mario.png";
+                }
+
+                draw(ctx, sprite, ticks) {
+                    const frame = Math.floor(ticks%450/150);
+                    if (this._data) ctx.drawImage(this._data, frame*16, 0, 16, 16, sprite.x, sprite.y, 48, 48);
+                }
+            }
+
+            class BarrelAsset {
+                constructor() {
+                    this._data = new Image();
+                    this._data.src = "barrel.png";
+                }
+
+                draw(ctx, sprite, ticks) {
+                    const frame = Math.floor(ticks%600/150);
+                    if (this._data) ctx.drawImage(this._data, frame*12, 0, 12, 10, sprite.x, sprite.y, 36, 30);
+                }
+            }
+
+            const helloAsset = new Asset();
+            const barrelAsset = new BarrelAsset();
+            let hello = new Sprite(helloAsset);
+            const barrel = new Barrel(barrelAsset);
+            const keyboard = new Keyboard();
+
+            function draw() {
+                const ctx = document.getElementById('canvas').getContext('2d');
+
+                const ticks = (new Date()).getTime();
+
+                hello.update(ticks, keyboard);
+                barrel.update(ticks, keyboard);
+
+                if (collision(hello, barrel)) 
+                {
+                    var t = hello;
+                    hello = new DeadMario(helloAsset, t.x, t.y);
+                }
+
+
+                ctx.clearRect(0, 0, 640, 480); // clear canvas
+                ctx.fillRect(0,0,640,480);
+                hello.draw(ctx, ticks);
+                barrel.draw(ctx, ticks);
+                
+                window.requestAnimationFrame(draw);
+            }  
+
+            function collision(sprite1, sprite2) {
+                const x1 = sprite1.x;
+                const y1 = sprite1.y;
+                const w1 = sprite1.w;
+                const h1 = sprite1.h;
+                const x2 = sprite2.x;
+                const y2 = sprite2.y;
+                const w2 = sprite2.w;
+                const h2 = sprite2.h;
+                return pointInRect(x1,y1,x2,y2,w2,h2) ||
+                       pointInRect(x1+w1,y1,x2,y2,w2,h2) ||
+                       pointInRect(x1,y1-h1,x2,y2,w2,h2) ||
+                       pointInRect(x1+w1,y1-h1,x2,y2,w2,h2);
+            } 
+
+            function pointInRect(px, py, rx, ry, rw, rh) {
+                return rx<=px && (rx+rw>=px) && ry>=py && (ry-rh<=py);
+            } 
+        
+            draw();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,75 @@
+<html>
+    <body>
+        <canvas id="canvas" height="480" width="640" style="border: 1px solid gainsboro;"></canvas>
+
+        <script>
+            class Keyboard {
+                constructor() {
+                    this._keys = new Set();
+                    const k = this._keys;
+                    document.addEventListener('keydown', function(evt) { k.add(evt.code) });
+                    document.addEventListener('keyup', function(evt) { k.delete(evt.code) });
+                }
+
+                has(k) {
+                    return this._keys.has(k)
+                }
+            }
+
+            class Sprite {
+                constructor(asset) {
+                    this._x=10;
+                    this._y=160;
+                    this._asset = asset;
+                    this._jump = 0;
+                    this._jumpPattern = [0, 5, 11, 15, 20, 24, 28, 32, 35, 38, 40, 42, 44, 45, 46, 47, 48, 48, 47, 46, 45, 44, 42, 40, 38, 35, 32, 28, 24, 20, 15, 10, 5];
+                }
+
+                update(ticks, keyboard) {
+                    if(this._jump>0) this._jump--;
+                    if(this._jump==0 && keyboard.has('KeyJ')) this._jump = this._jumpPattern.length-1;
+                    this._x=(this._x+5)%640;
+                }
+
+                draw(ctx, ticks) {
+                    this._asset.draw(ctx, this, ticks);
+                }
+
+                get x() { return this._x; }
+                get y() { return this._y - this._jumpPattern[this._jump]; }
+            }
+
+            class Asset {
+                constructor() {
+                    this._data = new Image();
+                    this._data.src = "mario.png";
+                }
+
+                draw(ctx, sprite, ticks) {
+                    const frame = Math.floor(ticks%450/150);
+                    if (this._data) ctx.drawImage(this._data, frame*16, 0, 16, 16, sprite.x, sprite.y, 48, 48);
+                }
+            }
+
+            const helloAsset = new Asset();
+            const hello = new Sprite(helloAsset);
+            const keyboard = new Keyboard();
+
+            function draw() {
+                const ctx = document.getElementById('canvas').getContext('2d');
+
+                const ticks = (new Date()).getTime();
+
+                hello.update(ticks, keyboard);
+
+                ctx.clearRect(0, 0, 640, 480); // clear canvas
+                ctx.fillRect(0,0,640,480);
+                hello.draw(ctx, ticks);
+                
+                window.requestAnimationFrame(draw);
+            }    
+        
+            draw();
+        </script>
+    </body>
+</html>
