@@ -1,2 +1,2 @@
 # game-programming
-A repo for some Game Programming demo script (FrontCon.lv)
+A repo for some Game Programming demo script
